@@ -2,25 +2,38 @@ from tkinter import *
 import random
 
 # 문제
-problem = [
-    """number = int(input("숫자를 입력하세요: "))
-if number % 2 == 0:
-print("짝수입니다!")
-else:
-print("홀수입니다!")""",
+problem = {
+    "문제1" : {
+        """"number = int(input("숫자를 입력하세요: "))""" : 1,
+        """"if number % 2 == 0:""" : 1,
+        """"print("짝수입니다!")""" : 1,
+        """"else:""" : 1,
+        """"print("홀수입니다!")""": 1
+    },
 
-    """import random
-menu = ["떡볶이", "마라탕", "햄버거", "돈가스", "짜장면"]
-today_pick = random.choice(menu)
-print("오늘 추천 메뉴는 바로 [" + today_pick + "] 입니다!")""",
+    "문제2" : {
+        """"import random""" : 1,
+        """"menu = ["떡볶이", "마라탕", "햄버거", "돈가스", "짜장면"]""" : 1,
+    "   """"today_pick = random.choice(menu)""" :1,
+        """"print("오늘 추천 메뉴는 바로 [" + today_pick + "] 입니다!")""": 1
+    },
 
-    """import time
+    "문제3" : {
+         """import time""" : 1,
+         """for i in [3, 2, 1]:""" : 1,
+         """print(i)""" : 1,
+         """time.sleep(1)""" : 1,
+         """print("로켓 발사!!")""" : 1
+    },
+}
+
+    """""import time
 for i in [3, 2, 1]:
 print(i)
 time.sleep(1)
-print("로켓 발사!!")"""
-]
-
+print("로켓 발사!!")""""": 1
+}
+    
 def next_question():
     # 입력창 비우기
     entry_input.delete(0, END)
@@ -43,9 +56,11 @@ def check_answer():
     user_typed = entry_input.get()
 
     global total_characters
-    total_characters += len(user_typed)
+
+    entry_input.delete(0, END)
     
     if user_typed == current_problem:
+        total_characters += len(user_typed)
         label_result.config(text="O 정답!", fg="green")
         correct_count()
     else:
@@ -62,8 +77,6 @@ def correct_count():
     global running
 
     label_count.config(text=f"맞힌 개수: {correct}")
-
-    CPM_calcuate()
 
     # 10개 이상 맞췄을 시 결과창 표시
     if correct >= 2:
@@ -89,54 +102,66 @@ def result_window():
     label_time = Label(result_time_frame, text="소요 시간: ")
     label_time.pack(side="left")
 
-    label_res_min = Label(result_time_frame, text=f"{min}분")
-    label_res_min.pack(side="left")
+    label_result_min = Label(result_time_frame, text=f"{timer_min}분")
+    label_result_min.pack(side="left")
 
-    label_res_sec = Label(result_time_frame, text=f"{sec}초")
-    label_res_sec.pack(side="left")
+    label_result_sec = Label(result_time_frame, text=f"{timer_sec}초")
+    label_result_sec.pack(side="left")
 
-    #타수 표시
-    label_CPM = Label(result_frame, text=f"타수: {CPM}")
-    label_CPM.pack()
+    #결과창용 타수 표시 프레임
+    label_result_CPM = Label(result_frame, text=f"타수: {CPM}")
+    label_result_CPM.pack()
+
     
 # 스톱워치
 timer = 0
-min = 0
-sec = 0
+timer_min = 0
+timer_sec = 0
 
 def stopwatch():
-    global timer
-    global min
-    global sec
+    global timer, timer_min, timer_sec
+
+    if running == False:
+        return 0;
 
     timer += 1
     if timer >= 60:
-        min = timer // 60
-        sec = timer % 60
+        timer_min = timer // 60
+        timer_sec = timer % 60
     else:
-        sec = timer
+        timer_sec = timer
 
-    label_stopwatch_min.config(text=f"{min}분")
-    label_stopwatch_sec.config(text=f"{sec}초")
+    label_stopwatch_min.config(text=f"{timer_min}분")
+    label_stopwatch_sec.config(text=f"{timer_sec}초")
 
-    if running == False:
-        ()
-    else:
-        root.after(1000, stopwatch)
+    CPM_calcuate()
 
-# 타수
+    root.after(1000, stopwatch)
+
+# 타수 계산
 CPM = 0
 total_characters = 0
 
 def CPM_calcuate():
-    global CPM
-    global total_characters
+    global CPM, total_characters
 
     if timer <= 0:
         CPM = 0
-    else:
-        CPM = (total_characters * 60) // timer
-
+        label_CPM.config(text="타수: 0")
+        return 0;
+    
+    current_problem = label_problem.cget("text")
+    user_typed = entry_input.get()
+    current_characters = len(user_typed)
+    
+    correct_characters = 0
+    
+    for i in range(current_characters, 0, -1):
+        if current_problem[:i] == user_typed[:i]:
+            correct_characters = i
+            break
+    
+    CPM = ((total_characters + correct_characters) * 60) // timer
     label_CPM.config(text=f"타수: {CPM}")
 
 #화면 구성
@@ -157,7 +182,7 @@ label_problem = Label(practice_frame, text="", width=40, height=5, font=("Consol
 label_problem.pack()
 
 # 사용자 입력 영역
-entry_input = Entry(practice_frame, font=("CourierNew", 14), width=40)
+entry_input = Entry(practice_frame, font=("Courier New", 14), width=40)
 entry_input.pack()
 
 entry_input.bind("<Return>", lambda event: check_answer())
