@@ -1,46 +1,50 @@
 from tkinter import *
-import pracitce_key
+
+import practice_key
 import practice_word
 import practice_code
 import challenge
 import option
 
 
+def show_main():
+    code_frame.pack_forget()
+    challenge_frame.pack_forget()
+    main_frame.pack()
+
 def show_practice_key():
     main_frame.pack_forget()
     code_frame.pack()
-    
-    practice_code.game_start() 
+    practice_key.game_start() 
 
 def show_practice_word():
     main_frame.pack_forget()
     code_frame.pack()
-    
-    practice_code.game_start() 
+    practice_word.game_start() 
 
 def show_practice_code():
+    
     main_frame.pack_forget()
     code_frame.pack()
-    
     practice_code.game_start() 
 
 def show_challenge():
+
     main_frame.pack_forget()
     challenge_frame.pack()
-    
     challenge.main_menu() 
 
 def show_option():
     main_frame.pack_forget()
     challenge_frame.pack()
     
-    challenge.main_menu() 
+    option.main_menu() 
 
 def game_():
     main_frame.pack_forget()
     challenge_frame.pack()
     
-    challenge.main_menu() 
+    game_.main_menu() 
 
 # 1. 윈도우 창 설정
 root = Tk()
@@ -59,7 +63,7 @@ Button(main_frame, text="챌린지 모드", font=("Malgun Gothic", 15), width=15
 Button(main_frame, text="환경 설정", font=("Malgun Gothic", 15), width=15, height=2, command=show_challenge).pack(pady=10)
 Button(main_frame, text="게임 종료", font=("Malgun Gothic", 15), width=15, height=2, command=show_challenge).pack(pady=10)
 
-code_frame = practice_code.create_frame(root)
+code_frame = practice_code.create_frame(root, show_main)
 challenge_frame = challenge.create_frame(root)
 
 # 프로그램 실행

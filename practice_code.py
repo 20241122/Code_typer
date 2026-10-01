@@ -303,12 +303,17 @@ def typo_marking():
     user_typed = entry_input.get("1.0", "end-1c")
     current_characters = len(user_typed)
 
-    for i in range(current_characters, -1, -1):
-        if current_problem[:i] == user_typed[:i]:
-            correct_characters = i
-            break
+# 1. 앞에서부터 정답과 일치하는 글자 수(correct_characters) 계산
+    correct_characters = 0
+    for i in range(len(user_typed)):
+        if i < len(current_problem) and user_typed[i] == current_problem[i]:
+            correct_characters += 1
         else:
-            entry_input.tag_add("typo", f"1.{i}", f"1.{i+1}")
+            break
+
+    # 2. 틀리기 시작한 위치(correct_characters)부터 입력된 끝까지 빨간색 태그 적용
+    if len(user_typed) > correct_characters:
+        entry_input.tag_add("typo", f"1.{correct_characters}", f"1.{len(user_typed)}")
 
 # 3-11. 사용자가 입력한 글자수 추적
 def check_input_len():
@@ -346,24 +351,29 @@ def count_input_key(event):
 
 # 3-13. 입력된 키가 오타면 눌린 횟수 카운트하기(작성중)
 def count_incorrect_key(event):
-
+    # 문제 가져오기
     current_problem = label_problem.cget("text")
     user_typed = entry_input.get("1.0", "end-1c")
+    current_characters = len(user_typed)
 
     #방금 누른 키보드의 글자나 키 이름 가져오기
     char = event.char.lower()  # 알파벳(a~z, A~Z)은 모두 소문자로 통일해서 가져옴
     keysym = event.keysym.lower() # 스페이스바, 백스페이스 같은 특수키의 이름 가져옴
 
     #방금 누른 키가 오타면 1 증가시키기
-    if char in incorrect_key_count:
-        incorrect_key_count[char] += 1
-        print(f"[{char}] 키 / 누적: {incorrect_key_count[char]}번") # 테스트용 출력
+    for i in range(current_characters, -1, -1):
+        if current_problem[:i] == user_typed[:i]:
+            if char in incorrect_key_count:
+                incorrect_key_count[char] += 1
+                print(f"[{char}] 키는 오타입니다! / 누적: {incorrect_key_count[char]}번") # 테스트용 출력
+
+            elif keysym == 'space':
+                key_count['space'] += 1
+                print(f"[{char}] 키는 오타입니다! / 누적: {incorrect_key_count[keysym]}번") # 테스트용 출력
         
-    elif keysym == 'space':
-        key_count['space'] += 1
-        
-    elif keysym == 'backspace':
-        key_count['backspace'] += 1
+            elif keysym == 'backspace':
+                key_count['backspace'] += 1
+                print(f"[{char}] 키는 오타입니다! / 누적: {incorrect_key_count[keysym]}번") # 테스트용 출력
 
 # 3-14. 입력된 키가 정답이면 그 수를 카운트하기(작성중)
 def count_correct_key(event):
@@ -377,14 +387,13 @@ def count_correct_key(event):
     #방금 누른 키가 오타면 1 증가시키기
     if char in correct_key_count:
         correct_key_count[char] += 1
-        print(f"[{char}] 키 / 누적: {correct_key_count[char]}번") # 테스트용 출력
+        print(f"[{char}] 키는 정답입니다! / 누적: {correct_key_count[char]}번") # 테스트용 출력
         
     elif keysym == 'space':
         key_count['space'] += 1
         
     elif keysym == 'backspace':
         key_count['backspace'] += 1
-    print("정답입니다! 현재 누른 수: %d", )
 
 # 3-15. 키 딕셔너리에서 최댓값 찾기
 def max_key_count():
@@ -676,34 +685,13 @@ def restart():
     next_question()
     container.after(100, stopwatch)
 
-# 3-17. 메인 메뉴로(작성중)
-def show_main():
-    global correct, timer, timer_sec, timer_min, accuracy, running, total_characters, CPM, correct_characters, current_total_characters, incorrect_characters
-
-    result_frame.pack_forget()
-
-    # 변수 초기화
-    running = True
-    correct = 0
-    
-    timer = 0
-    timer_min = 0
-    timer_sec = 0
-    
-    CPM = 0
-    total_characters = 0
-    correct_characters = 0
-    
-    accuracy = 100
-    current_total_characters = 0
-    incorrect_characters = 0
 
 # ==========================================
 # 4. 타자연습 실행 프레임
 # ==========================================
 
 # 4-1. 
-def create_frame(parent_window):
+def create_frame(parent_window, show_main):
     global main_window, practice_frame, result_frame, container
     global label_count, label_problem, entry_input, label_help
     global label_CPM, label_accuracy, label_typo
@@ -810,8 +798,14 @@ def create_frame(parent_window):
     heatmapButton = Button(result_frame, text="히트맵 보기", command=show_heatmap)
     heatmapButton.pack()
 
+    # 5-8. 결과창용 메인메뉴 버튼 표시
+    result_mainmenuButton = Button(result_frame, text="메인 메뉴로", command=show_main)
+    result_mainmenuButton.pack()
+    
     # 5-7. 결과창용 차트 표시
     chart_frame = Frame(result_frame)
     chart_frame.pack(pady=10)
+
+
 
     return container
